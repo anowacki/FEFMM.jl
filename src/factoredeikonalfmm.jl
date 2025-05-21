@@ -6,7 +6,7 @@ function solve_node(τ1::Array{R, N},
                     tags::Array{UInt8, N},
                     κ2::Array{R, N},
                     x::S,
-                    dx::Vector{<:AbstractFloat},
+                    dx,
                     cs::Vector{S},
                     I1::S, 
                     Iend::S) where {N, R <: AbstractFloat, T <: Array{R, N}, S <: CartesianIndex{N}}
@@ -66,7 +66,7 @@ function fefmm_loop!(τ1::Array{R, N},
                      tags::Array{UInt8, N}, 
                      front::BinaryMinHeap{Node{R, N}},
                      κ2::Array{R, N},
-                     dx::Vector{<:AbstractFloat},
+                     dx::Tuple,
                      cs::Vector{S},
                      xn::Vector{S},
                      I1::S, 
@@ -95,24 +95,40 @@ end
 
 
 """
-Inputs to fefmm: 
-κ - array of slowness
-dx - array of grid spacings
-x0 - linear index of source location
+    fefmm(κ2::Array{R, N}, dx::Tuple, xs::CartesianIndex{N}; return_factor=false) where {R <: AbstractFloat, N} -> τ1τ0, ∇τ0
 
-Outputs of fefmm: 
-τ1τ0 = travel time array from source
+Compute the distance from `xs` to each point in `κ2`, where `κ2` is a regular
+grid of points of dimension `N`.  The distances are placed in a new
+grid returned `τ1τ0` with the same dimensions as `κ2`.
 
-Tags: 
-1 = unknown
-2 = front
-3 = known
+If `κ2` is a grid of squared wave slownesses (i.e., squared inverse of
+wave velocities), then `τ1τ0` is the travel time between each point and
+the source location `xs`.
+
+# Arguments
+- `κ2`: array of slowness squared.
+- `dx`: tuple of grid spacings of `κ2`.  I.e., `dx[1]` is the grid spacing in the
+  first dimension of `κ2`, `dx[2]` the second, and so on.
+- `xs`: index of source within grid of points.  This must be a `CartesianIndex`.
+
+# Keyword arguments
+- `return_factor=false`: If `true`, return only the factor `τ1` rather than
+  `τ1τ0` (the default).
+
+# Outputs
+- `τ1τ0`: travel time array from source (default; `return_false=false`)
+- `τ1`: factors (when `return_false=true`)
 """
+function fefmm(
+    κ2::Array{R,N},
+    dx::Tuple,
+    xs::CartesianIndex{N};
+    return_factor=false
+) where {R<:AbstractFloat, N}
+    length(dx) == N ||
+        throw(ArgumentError("`dx` must contain $N items (one grid spacing per dimension)"))
 
-function fefmm(κ2::Array{R, N},
-               dx::Vector{<:AbstractFloat},
-               xs::CartesianIndex{N}; return_factor=false) where {R <: AbstractFloat, N}
-    #initialization
+    # Initialization
     cs = cartstrides(κ2)
     inds = CartesianIndices(κ2)
     I1 = first(inds)
@@ -122,16 +138,23 @@ function fefmm(κ2::Array{R, N},
     ∇τ0 = grad_analytic(τ0, dx..., size(κ2)..., Tuple(xs)...)
     τ1 = R(Inf).*ones(R, size(κ2))
     τ1[xs] = sqrt(κ2[xs])
-    tags = ones(UInt8,size(κ2))
+
+    # Tags: 
+    # 1 = unknown
+    # 2 = front
+    # 3 = known
+    tags = ones(UInt8, size(κ2))
     tags[xs] = 0x2
     front = BinaryMinHeap{Node{R,N}}()
     push!(front, Node(inds[xs], τ1[xs]*τ0[xs])) 
-    α = Array{R}(undef,length(size(τ1)))
+    α = Array{R}(undef, length(size(τ1)))
     β = similar(α)
     LI = LinearIndices(τ1)
     xn = Array{typeof(I1)}(undef, N*2)
-    #main loop
+
+    # Main loop
     fefmm_loop!(τ1, 1, α, β, τ0, ∇τ0, tags, front, κ2, dx, cs, xn, I1, Iend, LI)
+
     if return_factor
         return τ1 # for some ML workflows you might only want the factor rather than the full solution
     else

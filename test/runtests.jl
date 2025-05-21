@@ -12,7 +12,7 @@ module FEFMM_Tests
             l2norm = zeros(length(hlist))
             for i = 1:length(hlist)
                 (x0, k2, t_exact) = test_fun(hlist[i]) 
-                t_pred = FEFMM.fefmm(k2, repeat([hlist[i]], ndims(k2)), x0)
+                t_pred = FEFMM.fefmm(k2, ntuple(_ -> hlist[i], ndims(k2)), x0)
                 err = t_exact.-t_pred
                 linorm[i] = norm(err, Inf)
                 l2norm[i] = norm(err, 2)/sqrt(length(err))
@@ -50,19 +50,19 @@ module FEFMM_Tests
 
         @testset "Basic FEFMM Checks" begin
             κ21d = ones(101)
-            dx1d = [0.1]
+            dx1d = (0.1,)
             xs1d = CartesianIndex(1)
             τa1d = 0:0.1:10
             @test all(isapprox.(τa1d, FEFMM.fefmm(κ21d, dx1d, xs1d)))
             κ22d = ones(101,101)
-            dx2d = [0.1,0.1]
+            dx2d = (0.1,0.1)
             xs2d = CartesianIndex(1,1)
             τaxis = 0:0.1:10
             τa2d = sqrt.(τaxis'.^2 .+ τaxis.^2)
             @test all(isapprox.(τa2d, FEFMM.fefmm(κ22d, dx2d, xs2d)))
             @test all(isapprox.(Float32.(τa2d), Float32.(FEFMM.fefmm(κ22d, Float32.(dx2d), xs2d))))
             κ23d = ones(101,101,101)
-            dx3d = [0.1,0.1,0.1]
+            dx3d = (0.1,0.1,0.1)
             xs3d = CartesianIndex(1,1,1)
             τa3d = zeros(101,101,101)
             for k in 1:101
@@ -74,6 +74,11 @@ module FEFMM_Tests
             end
             @test all(isapprox.(τa3d, FEFMM.fefmm(κ23d, dx3d, xs3d)))
             @test all(isapprox.(Float32.(τa3d), Float32.(FEFMM.fefmm(κ23d, Float32.(dx3d), xs3d))))
+        end
+
+        @testset "Argument checking" begin
+            @test_throws ArgumentError FEFMM.fefmm(ones(3, 4), (1., 1., 1.), CartesianIndex(1, 1))
+            @test_throws MethodError FEFMM.fefmm(ones(3, 4), [1., 1.], CartesianIndex(1, 1))
         end
 
         @testset "Convergence Tests" begin
