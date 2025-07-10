@@ -158,7 +158,10 @@ function fefmm(
     if return_factor
         return τ1 # for some ML workflows you might only want the factor rather than the full solution
     else
-        return τ1.*τ0
+        # Compute travel times via τ0 .* τ1
+        # Avoid allocating a new array by updating and returning τ1
+        τ1 .*= τ0
+        return τ1
     end
 end
 
