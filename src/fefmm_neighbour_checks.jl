@@ -4,19 +4,14 @@
 
 cilt(a::S, b::S) where {S <: CartesianIndex} = all(a.I .<= b.I)
 
-function cartstrides(A::AbstractArray)
-    s = size(A)
-    dims = length(s)
-    inds = []
-    for i = 1:dims
-        z = zeros(Int, dims)
-        z[i] = 1
-        push!(inds, CartesianIndex(z...))
+function cartstrides(A::AbstractArray{R,N}) where {R,N}
+    ntuple(N) do i
+        z = ntuple(ii -> ii == i ? 1 : 0, N)
+        CartesianIndex(z...)
     end
-    [inds...]
 end
 
-function set_neighbours!(xn::Vector{S}, x::S, tags::Array{UInt8, N}, cs::Vector{S}, I1::S, Iend::S) where {N, S <: CartesianIndex{N}}
+function set_neighbours!(xn::Vector{S}, x::S, tags::Array{UInt8, N}, cs::NTuple{N,S}, I1::S, Iend::S) where {N, S <: CartesianIndex{N}}
     for (i,s) in enumerate(cs)
         if cilt(I1, x-s) && @inbounds tags[x-s] < 0x3 
             @inbounds xn[2*i-1] = x-s
