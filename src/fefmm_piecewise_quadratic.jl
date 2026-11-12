@@ -1,12 +1,13 @@
-function abdiv(a::R, b::R) where {R <: AbstractFloat}
-    if a == zero(R)
+# Return Inf for 0/0 rather than NaN
+function abdiv(a::R, b::R) where {R<:AbstractFloat}
+    if iszero(a)
         return convert(R, Inf)
     else
         return b/a
     end
 end
 
-function solve_quadratic(a::R, bo2::R, c::R) where {R <: AbstractFloat}
+function solve_quadratic(a::R, bo2::R, c::R) where {R<:AbstractFloat}
     #bo2 = b over 2
     in_sqrt = bo2^2 - a*c
     if in_sqrt > zero(R)
@@ -16,18 +17,17 @@ function solve_quadratic(a::R, bo2::R, c::R) where {R <: AbstractFloat}
     end
 end
 
-function solve_piecewise_quadratic(α1::R, β1::R, κ2x::R) where {R <: AbstractFloat}
-    #solve_quadratic(α1^2, -α1*β1, β1^2-κ2x) = 
-    (sqrt(κ2x)+β1)/α1
+function solve_piecewise_quadratic(α1::R, β1::R, κ2x::R) where {R<:AbstractFloat}
+    (sqrt(κ2x) + β1)/α1
 end
 
-function solve_piecewise_quadratic(α1::R, α2::R, β1::R, β2::R, κ2x::R) where {R <: AbstractFloat}
-    a = α1^2+α2^2
-    bo2 = -α1*β1-α2*β2
-    c = β1^2+β2^2-κ2x
+function solve_piecewise_quadratic(α1::R, α2::R, β1::R, β2::R, κ2x::R) where {R<:AbstractFloat}
+    a = α1^2 + α2^2
+    bo2 = -α1*β1 - α2*β2
+    c = β1^2+β2^2 -κ2x
     τ1t = solve_quadratic(a, bo2, c)
-    ∇τ1t1 = α1*τ1t-β1
-    ∇τ1t2 = α2*τ1t-β2
+    ∇τ1t1 = α1*τ1t - β1
+    ∇τ1t2 = α2*τ1t - β2
     if (∇τ1t1 <= 0) || (∇τ1t2 <= 0)
         tr1 = abdiv(α1, β1)
         tr2 = abdiv(α2, β2)
@@ -40,14 +40,14 @@ function solve_piecewise_quadratic(α1::R, α2::R, β1::R, β2::R, κ2x::R) wher
     τ1t 
 end
 
-function solve_piecewise_quadratic(α1::R, α2::R, α3::R, β1::R, β2::R, β3::R, κ2x::R) where {R <: AbstractFloat}
-    a = α1^2+α2^2+α3^2
-    bo2 = -α1*β1-α2*β2-α3*β3
-    c = β1^2+β2^2+β3^2-κ2x
+function solve_piecewise_quadratic(α1::R, α2::R, α3::R, β1::R, β2::R, β3::R, κ2x::R) where {R<:AbstractFloat}
+    a = α1^2 + α2^2 + α3^2
+    bo2 = -α1*β1 - α2*β2 - α3*β3
+    c = β1^2 + β2^2 + β3^2 - κ2x
     τ1t = solve_quadratic(a, bo2, c)
-    ∇τ1t1 = α1*τ1t-β1
-    ∇τ1t2 = α2*τ1t-β2
-    ∇τ1t3 = α3*τ1t-β3
+    ∇τ1t1 = α1*τ1t - β1
+    ∇τ1t2 = α2*τ1t - β2
+    ∇τ1t3 = α3*τ1t - β3
     if (∇τ1t1 <= 0) || (∇τ1t2 <= 0) || (∇τ1t3 <= 0)
         tr1 = abdiv(α1, β1)
         tr2 = abdiv(α2, β2)

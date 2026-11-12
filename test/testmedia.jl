@@ -1,5 +1,4 @@
 function const_k2_2D(h)
-    #Define Medium
     a = -0.4
     s0 = 2.0
     #Set up grid
@@ -20,7 +19,6 @@ function const_k2_2D(h)
 end
 
 function const_v2_2D(h)
-    #Define Medium
     a = 1.0
     s0 = 2.0
     #Set up grid
@@ -68,7 +66,6 @@ function gaussian_factor_2D(h)
 end
 
 function const_k2_3D(h)
-    #Define Medium
     a = -1.65
     s0 = 2.0
     #Set up grid
@@ -102,7 +99,6 @@ function const_k2_3D(h)
 end
 
 function const_v2_3D(h)
-    #Define Medium
     a = 1.0
     s0 = 2.0
     #Set up grid
@@ -135,7 +131,6 @@ function const_v2_3D(h)
 end
 
 function gaussian_factor_3D(h)
-    #define medium
     sigmax1 = 0.2
     sigmax2 = 0.4
     sigmax3 = 0.1

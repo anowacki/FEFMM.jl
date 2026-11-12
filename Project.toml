@@ -1,10 +1,14 @@
 name = "FEFMM"
 uuid = "58909ebc-143a-11e9-1106-4d86b09c1020"
-authors = ["Jack Muir <jmuir@caltech.edu>"]
 version = "0.3.0-DEV"
+authors = ["Andy Nowacki <a.nowacki@leeds.ac.uk>"]
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+
+[compat]
+DataStructures = "0.19"
+julia = "1.10"
 
 [extras]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"

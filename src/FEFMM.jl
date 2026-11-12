@@ -1,16 +1,18 @@
 module FEFMM
 
-    import Base: isless
-    using DataStructures
+    using DataStructures: DataStructures, BinaryMinHeap
     
-    export fefmm
+    export
+        FEFMMGrid,
+        fefmm!,
+        fefmm
 
-    #small helper functions
-    include("fefmm_nodes.jl")
+    include("types.jl")
+    # Small helper functions
     include("fefmm_neighbour_checks.jl")
     include("fefmm_piecewise_quadratic.jl")
     include("fefmm_utilities.jl")
-    #core functions (initialization, main loop, node solve)
+    # Core functions (initialization, main loop, node solve)
     include("factoredeikonalfmm.jl")
 
 end 
